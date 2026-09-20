@@ -25,6 +25,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.spring.SpringSecurity.service.CustomOidcUserService;
+
 
 @Configuration
 public class MySecurityConfig{
@@ -54,7 +56,8 @@ public class MySecurityConfig{
 	
 	@Bean
 	 public SecurityFilterChain securityFilterChain(DaoAuthenticationProvider provider,
-			 HttpSecurity http, JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception
+			 HttpSecurity http, JwtAuthenticationConverter jwtAuthenticationConverter,
+			 CustomOidcUserService customOidcUserService) throws Exception
 	{
 		http
 		.csrf(csrf->csrf.disable())
@@ -69,7 +72,12 @@ public class MySecurityConfig{
 		session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 		.oauth2ResourceServer(oauth2->
 		oauth2.jwt(jwt->
-		jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)));
+		jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
+		.oauth2Login(oauth->
+		oauth.userInfoEndpoint(userInfo->
+		userInfo.oidcUserService(customOidcUserService))
+		.defaultSuccessUrl("/google/login",true));
+		
 		return http.build();
 		
 	}
